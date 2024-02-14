@@ -335,3 +335,163 @@ class AnalyticsDataframe:
                 self.response_vector = numeric_vals[predictor_name]
             else:
                 self.response_vector += numeric_vals[predictor_name]
+
+    def update_predictor_person_name(self, predictor_name: str = None):
+        """Update a predictor with random categorical values.
+
+        Args:
+            predictor_name:
+                A predictor name in the initial AnalyticsDataframe.
+
+        """
+
+        with set_random_state(validate_random_state(self.seed)):
+            
+            fake = Faker('en_US')
+            fake.seed_instance(self.seed)
+            df = self.predictor_matrix
+            df[predictor_name] = [fake.name() for i in range(len(df))]
+                
+            self.predictor_matrix = df
+            
+        
+    def update_predictor_date(self, 
+                              predictor_name: str = None, 
+                              from_date: str = None,
+                              to_date: str = None):
+        """Update a predictor with random categorical values.
+
+        Args:
+            predictor_name:
+                A predictor name in the initial AnalyticsDataframe.
+            
+            from_date:
+                A datetime object that specifies the start of the date range.
+             
+            to_date:
+                A datetime object that specifies the end of the date range.
+            
+        Raises:
+            ValueError: If the argument type of from_date is not datetime
+            ValueError: If the argument type of to_date is not datetime
+            
+
+        """        
+        if type(from_date) != datetime:
+            raise ValueError('Input argument should be datetime object.')
+            
+        if type(to_date) != datetime:
+            raise ValueError('Input argument should be datetime object.')
+          
+
+        with set_random_state(validate_random_state(self.seed)):
+            
+            fake = Faker('en_US')
+            fake.seed_instance(self.seed)
+            df = self.predictor_matrix
+
+            dates = []
+
+            for i in range(len(df)):
+                random_date = fake.date_between(from_date, to_date)
+                dates.append(random_date)
+            dates.sort()
+
+            df[predictor_name] = dates
+
+            self.predictor_matrix = df
+        
+    
+    def update_predictor_company_name(self, predictor_name: str = None):
+        """Update a predictor with random categorical values.
+
+        Args:
+            predictor_name:
+                A predictor name in the initial AnalyticsDataframe.            
+
+        """
+       
+        with set_random_state(validate_random_state(self.seed)):
+            
+            fake = Faker('en_US')
+            fake.seed_instance(self.seed)
+            df = self.predictor_matrix
+            df[predictor_name] = [fake.company() for i in range(len(df))]
+
+            self.predictor_matrix = df
+
+    
+    
+    
+    def update_predictor_address(self, 
+                                 street_predictor_name: str = None,
+                                 city_predictor_name: str = None,
+                                 state_predictor_name: str = None,
+                                 zip_predictor_name: str = None):
+        """Update a predictor with random categorical values.
+
+        Args:
+            street_predictr_name:
+                A predictor name in the initial AnalyticsDataframe for street.
+            
+            city_predictor_name:
+                A predictor name in the initial AnalyticsDataframe for city.
+            
+            state_predictor_name:
+                A predictor name in the initial AnalyticsDataframe for state.
+                
+            zip_predictor_name:
+                A predictor name in the initial AnalyticsDataframe for zipcode.
+
+        """          
+
+        with set_random_state(validate_random_state(self.seed)):
+            
+            fake = Faker('en_US')
+            fake.seed_instance(self.seed)
+            df = self.predictor_matrix
+      
+            addresses = []
+            for i in range(len(df)):
+                addresses.append(fake.address() + ", United States")
+
+            Street = []
+            City = []
+            State = []
+            zipcode = []
+            for address in addresses:
+                address = address.replace('\n', ', ')
+                address = pyap.parse(address, country='US')
+                if len(address) == 1:
+                    address = address[0]
+                    street = address.street_number + " " + address.street_name
+                    city = address.city
+                    state = address.region1
+                    postal_code = str(address.postal_code)
+                                       
+                else:
+                   
+                    street = 'NA'
+                    city = 'NA'
+                    state = 'NA'
+                    postal_code = 'NA'
+                
+                Street.append(street)
+                City.append(city)
+                State.append(state)
+                zipcode.append(postal_code)
+
+            
+            for j in range(len(df) ):
+                df.loc[df.index[j], street_predictor_name] = Street[j]
+                
+            for j in range(len(df) ):
+                df.loc[df.index[j], city_predictor_name] = City[j]
+                
+            for j in range(len(df) ):
+                df.loc[df.index[j], state_predictor_name] = State[j]
+                
+            for j in range(len(df) ):
+                df.loc[df.index[j], zip_predictor_name] = zipcode[j]
+
+            self.predictor_matrix = df
