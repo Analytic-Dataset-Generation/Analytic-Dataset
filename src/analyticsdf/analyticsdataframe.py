@@ -5,6 +5,10 @@ from itertools import combinations
 
 from analyticsdf import check_columns_exist, set_random_state, validate_random_state, _check_columns_exist, check_is_numeric
 
+from faker import Faker
+from datetime import datetime
+from random_address import real_random_address
+
 class AnalyticsDataframe:
     """Create a AnalyticsDataframe class.
 
@@ -391,12 +395,10 @@ class AnalyticsDataframe:
             df = self.predictor_matrix
 
             dates = []
-
             for i in range(len(df)):
                 random_date = fake.date_between(from_date, to_date)
                 dates.append(random_date)
             dates.sort()
-
             df[predictor_name] = dates
 
             self.predictor_matrix = df
@@ -442,56 +444,19 @@ class AnalyticsDataframe:
                 
             zip_predictor_name:
                 A predictor name in the initial AnalyticsDataframe for zipcode.
-
+            
         """          
 
         with set_random_state(validate_random_state(self.seed)):
             
-            fake = Faker('en_US')
-            fake.seed_instance(self.seed)
             df = self.predictor_matrix
-      
             addresses = []
             for i in range(len(df)):
-                addresses.append(fake.address() + ", United States")
-
-            Street = []
-            City = []
-            State = []
-            zipcode = []
-            for address in addresses:
-                address = address.replace('\n', ', ')
-                address = pyap.parse(address, country='US')
-                if len(address) == 1:
-                    address = address[0]
-                    street = address.street_number + " " + address.street_name
-                    city = address.city
-                    state = address.region1
-                    postal_code = str(address.postal_code)
-                                       
-                else:
-                   
-                    street = 'NA'
-                    city = 'NA'
-                    state = 'NA'
-                    postal_code = 'NA'
-                
-                Street.append(street)
-                City.append(city)
-                State.append(state)
-                zipcode.append(postal_code)
-
-            
-            for j in range(len(df) ):
-                df.loc[df.index[j], street_predictor_name] = Street[j]
-                
-            for j in range(len(df) ):
-                df.loc[df.index[j], city_predictor_name] = City[j]
-                
-            for j in range(len(df) ):
-                df.loc[df.index[j], state_predictor_name] = State[j]
-                
-            for j in range(len(df) ):
-                df.loc[df.index[j], zip_predictor_name] = zipcode[j]
+                address = real_random_address()
+                if 'city' in address.keys():
+                    df.loc[df.index[i], street_predictor_name] = address['address1']
+                    df.loc[df.index[i], city_predictor_name] = address['city']
+                    df.loc[df.index[i], state_predictor_name] = address['state']
+                    df.loc[df.index[i], zip_predictor_name] = address['postalCode']
 
             self.predictor_matrix = df
