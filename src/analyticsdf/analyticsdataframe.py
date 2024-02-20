@@ -320,7 +320,7 @@ class AnalyticsDataframe:
         """
 
         if predictor_name not in self.predictor_names:
-            raise KeyError('The column {predictor_name} were not found in predictors.')
+            raise KeyError(f'The column {predictor_name} were not found in predictors.')
 
         if check_is_numeric(self.predictor_matrix[predictor_name]):
             raise TypeError(f'predictor {predictor_name} expected to be non-numeric '
